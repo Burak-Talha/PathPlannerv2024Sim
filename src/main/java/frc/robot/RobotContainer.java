@@ -17,6 +17,7 @@ import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstrai
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import frc.robot.Commands.TurnToTarget;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -39,6 +40,9 @@ public class RobotContainer {
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
   SendableChooser<Command> autoChooser = new SendableChooser<>();
+
+  double targetX;
+  double targetY;
 
   // The driver's controller
   XboxController m_driverController =
@@ -76,6 +80,8 @@ public class RobotContainer {
     new JoystickButton(m_driverController, Button.kRightBumper.value)
         .onTrue(new InstantCommand(() -> m_robotDrive.setMaxOutput(0.5)))
         .onFalse(new InstantCommand(() -> m_robotDrive.setMaxOutput(1)));
+
+    new JoystickButton(m_driverController, Button.kA.value).whileTrue(new TurnToTarget(m_robotDrive).repeatedly());
   }
 
   public DriveSubsystem getRobotDrive() {
@@ -100,7 +106,9 @@ public class RobotContainer {
     //m_robotDrive.followPathCommand("Example Path");
     PathPlannerPath path = PathPlannerPath.fromPathFile("Example Path");
     //autoChooser.getSelected().andThen(AutoBuilder.pathfindThenFollowPath(path, new PathConstraints(3, 3, 0, 0)));
-    //autoChooser.getSelected();
-    return autoChooser.getSelected().andThen(AutoBuilder.pathfindThenFollowPath(path, new PathConstraints(3, 3, 0, 0)));
+    //autoChooser.getSelected(); autoChooser.getSelected().andThen(AutoBuilder.pathfindThenFollowPath(path, new PathConstraints(3, 3, 0, 0)));
+    // AutoBuilder.pathfindToPose(new Pose2d(7, 6, new Rotation2d(Math.toRadians(0))), new PathConstraints(3, 3, 0, 0)).andThen(AutoBuilder.pathfindToPose(new Pose2d(1, 4, new Rotation2d(Math.toRadians(0))), new PathConstraints(3, 3, 0, 0))).andThen(AutoBuilder.pathfindToPose(new Pose2d(9, 1, new Rotation2d(Math.toRadians(0))), new PathConstraints(3, 3, 0, 0)));
+    //autoChooser.getSelected().andThen(AutoBuilder.pathfindThenFollowPath(path, new PathConstraints(3, 3, 0, 0)));
+    return autoChooser.getSelected();
   }
 }

@@ -14,6 +14,7 @@ import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -26,6 +27,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
@@ -39,6 +41,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
+
+  XboxController xboxController = new XboxController(0);
   // The motors on the left side of the drive.
   private final PWMSparkMax m_leftLeader = new PWMSparkMax(DriveConstants.kLeftMotor1Port);
   private final PWMSparkMax m_leftFollower = new PWMSparkMax(DriveConstants.kLeftMotor2Port);
@@ -68,11 +72,14 @@ public class DriveSubsystem extends SubsystemBase {
   // The gyro sensor
   private final ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
 
+  double outputYcoeffector = -1;
+
   // Odometry class for tracking robot pose
   private final DifferentialDriveOdometry m_odometry;
   private final DifferentialDriveKinematics m_kinematics = new DifferentialDriveKinematics(DriveConstants.kTrackwidthMeters);
   private final PIDController xPidController = new PIDController(AutoConstants.kPXController, AutoConstants.kIXController, AutoConstants.kDXController);
   private final PIDController yawPidController = new PIDController(AutoConstants.kPYawController, AutoConstants.KIYawController, AutoConstants.kDYawController);
+  private final PIDController turnPidController = new PIDController(AutoConstants.kPTurnController, AutoConstants.KITurnController, AutoConstants.kDTurnController);
 
   // These classes help us simulate our drivetrain
   public DifferentialDrivetrainSim m_drivetrainSimulator;
@@ -176,6 +183,10 @@ public class DriveSubsystem extends SubsystemBase {
                 this // Reference to this subsystem to set requirements
         );
     }
+  
+  public void turnXdegrees(double targetSetpoint){
+    arcadeDrive(0, turnPidController.calculate(m_gyro.getRotation2d().getDegrees(), targetSetpoint));
+  }
 
   @Override
   public void periodic() {
@@ -185,6 +196,7 @@ public class DriveSubsystem extends SubsystemBase {
         m_leftEncoder.getDistance(),
         m_rightEncoder.getDistance());
     m_fieldSim.setRobotPose(getPose());
+    System.out.println("Current Degree:"+getHeading());
   }
 
   @Override
@@ -258,8 +270,20 @@ public class DriveSubsystem extends SubsystemBase {
    * @param fwd the commanded forward movement
    * @param rot the commanded rotation
    */
+
+   SlewRateLimiter outputYLimiter = new SlewRateLimiter(1);
+   double outputY;
+   double outputX;
+
   public void arcadeDrive(double fwd, double rot) {
-    m_drive.arcadeDrive(fwd, rot);
+    outputY = fwd*0.8;
+      outputX = rot*0.55;
+    if(xboxController.getRightBumper()){
+      outputY = outputYLimiter.calculate(outputYcoeffector*fwd*0.9);
+      outputX = rot*0.55;
+    }
+      
+    m_drive.arcadeDrive(outputY, outputX);
   }
 
   public void drive(ChassisSpeeds speeds){

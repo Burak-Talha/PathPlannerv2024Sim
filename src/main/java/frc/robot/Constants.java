@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.LinearSystem;
@@ -87,8 +90,17 @@ public final class Constants {
     public static final double kPXController = 0.8;
     public static double kIXController = 0.0001;
     public static double kDXController = 0.00001;
-    public static final double kPYawController = 0.8;
+
+    public static final double kPYawController = 1;
     public static final double KIYawController = 0.0001;
     public static double kDYawController = 0.00001;
+
+    public static final double kPTurnController = 0.012;
+    public static final double KITurnController = 0.000009;
+    public static double kDTurnController = 0.001;
+  }
+  public static final class FieldConstants{
+    public static final Pose2d RED_SUB_WOOFER = new Pose2d(new Translation2d(0, 5.60), new Rotation2d(Math.toRadians(180)));
+    public static final Pose2d BLUE_SUB_WOOFER = new Pose2d(new Translation2d(16.5, 5.60), new Rotation2d(Math.toRadians(0)));
   }
 }
