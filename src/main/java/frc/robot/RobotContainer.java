@@ -17,6 +17,8 @@ import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstrai
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import frc.robot.Commands.IntakeCmd;
+import frc.robot.Commands.ResetAngle;
 import frc.robot.Commands.TurnToTarget;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -65,7 +67,7 @@ public class RobotContainer {
         new RunCommand(
             () ->
                 m_robotDrive.arcadeDrive(
-                    -m_driverController.getLeftY(), -m_driverController.getRightX()),
+                    m_driverController.getRawAxis(3)-m_driverController.getRawAxis(2), -m_driverController.getLeftX()*0.7),
             m_robotDrive));
   }
 
@@ -82,6 +84,7 @@ public class RobotContainer {
         .onFalse(new InstantCommand(() -> m_robotDrive.setMaxOutput(1)));
 
     new JoystickButton(m_driverController, Button.kA.value).whileTrue(new TurnToTarget(m_robotDrive).repeatedly());
+    new JoystickButton(m_driverController, Button.kX.value).whileTrue(new IntakeCmd(m_robotDrive, m_driverController));
   }
 
   public DriveSubsystem getRobotDrive() {
@@ -109,6 +112,6 @@ public class RobotContainer {
     //autoChooser.getSelected(); autoChooser.getSelected().andThen(AutoBuilder.pathfindThenFollowPath(path, new PathConstraints(3, 3, 0, 0)));
     // AutoBuilder.pathfindToPose(new Pose2d(7, 6, new Rotation2d(Math.toRadians(0))), new PathConstraints(3, 3, 0, 0)).andThen(AutoBuilder.pathfindToPose(new Pose2d(1, 4, new Rotation2d(Math.toRadians(0))), new PathConstraints(3, 3, 0, 0))).andThen(AutoBuilder.pathfindToPose(new Pose2d(9, 1, new Rotation2d(Math.toRadians(0))), new PathConstraints(3, 3, 0, 0)));
     //autoChooser.getSelected().andThen(AutoBuilder.pathfindThenFollowPath(path, new PathConstraints(3, 3, 0, 0)));
-    return autoChooser.getSelected();
+    return autoChooser.getSelected().andThen(new ResetAngle(m_robotDrive));
   }
 }

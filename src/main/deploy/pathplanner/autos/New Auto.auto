@@ -2,15 +2,21 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.2651860724115016,
-      "y": 6.476385904471273
+      "x": 1.34,
+      "y": 7.27
     },
-    "rotation": 46.397181027296284
+    "rotation": -0.08515451817272414
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FFPath"
+          }
+        },
         {
           "type": "path",
           "data": {

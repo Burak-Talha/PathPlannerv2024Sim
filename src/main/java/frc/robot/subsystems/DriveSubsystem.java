@@ -192,16 +192,14 @@ public class DriveSubsystem extends SubsystemBase {
   
   public void turnXdegrees(double targetSetpoint){
     try{
-    if(DriverStation.getAlliance().get() == Alliance.Blue){
-      currentAngle = angleCalculationForBlue();
-    }
-    else{
       currentAngle = getPose().getRotation().getDegrees();
+    if(DriverStation.getAlliance().get() == Alliance.Blue){
+      currentAngle = getAngleCalculationForBlue();
     }
   }catch(Exception exception){
   }
     //getPose().getRotation().getDegrees()
-    arcadeDrive(-controller.getLeftY()*0.4, turnPidController.calculate(currentAngle, targetSetpoint));
+    arcadeDrive((controller.getRawAxis(3)-controller.getRawAxis(2))*0.4, turnPidController.calculate(currentAngle, targetSetpoint));
   }
 
   @Override
@@ -212,7 +210,8 @@ public class DriveSubsystem extends SubsystemBase {
         m_leftEncoder.getDistance(),
         m_rightEncoder.getDistance());
     m_fieldSim.setRobotPose(getPose());
-    System.out.println("Current Degree:"+getPose().getRotation().getDegrees());
+    System.out.print("Current Degree For RED :"+getPose().getRotation().getDegrees());
+    System.out.println("Current Degree For BLUE :"+getAngleCalculationForBlue());
   }
 
   @Override
@@ -379,7 +378,7 @@ public class DriveSubsystem extends SubsystemBase {
     return Math.IEEEremainder(m_gyro.getAngle(), 360) * (DriveConstants.kGyroReversed ? -1.0 : 1.0);
   }
 
-  public double angleCalculationForBlue(){
+  public double getAngleCalculationForBlue(){
     return Math.abs(m_gyro.getAngle() % 360);
   }
 }
