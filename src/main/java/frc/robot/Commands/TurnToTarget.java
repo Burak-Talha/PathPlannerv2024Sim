@@ -4,6 +4,8 @@
 
 package frc.robot.Commands;
 
+import java.lang.reflect.Field;
+import java.sql.Driver;
 import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -16,7 +18,7 @@ import frc.robot.subsystems.DriveSubsystem;
 public class TurnToTarget extends Command {
 
   private DriveSubsystem driveSubsystem;
-  private Alliance currentAlly;
+  private Optional<Alliance> currentAlly;
   private Pose2d targetPose;
   private Pose2d currentPose;
 
@@ -30,8 +32,16 @@ public class TurnToTarget extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    currentAlly = Alliance.Blue;
-    targetPose = FieldConstants.BLUE_SUB_WOOFER;
+    currentAlly = DriverStation.getAlliance();
+
+    try{
+    if(currentAlly.get() == Alliance.Red){
+    targetPose = FieldConstants.RED_SUB_WOOFER;
+    }else if(currentAlly.get() == Alliance.Blue){
+      targetPose = FieldConstants.BLUE_SUB_WOOFER;
+      //driveSubsystem.;
+    }
+  }catch(Exception exception){}
     /*if(currentAlly.get() == Alliance.Blue){
       targetPose = FieldConstants.BLUE_SUB_WOOFER;
     }else{
@@ -47,8 +57,21 @@ public class TurnToTarget extends Command {
     double x = targetPose.getX() - currentPose.getX();
     double y = targetPose.getY() - currentPose.getY();
     double targetSetpoint = Math.toDegrees(Math.atan2(y, x));
-    System.out.print("Target Setpoint:"+targetSetpoint);
+
+    try{
+    if(DriverStation.getAlliance().get() == Alliance.Blue){
+    // Ensure the angle is in the range [0, 360)
+    targetSetpoint = (targetSetpoint + 360) % 360;
+    }
+    }catch(Exception exception){
+      
+    }
+
+    System.out.print("Target Setpoint: " + targetSetpoint);
+
+    // Pass the target setpoint to the turn method in degrees
     driveSubsystem.turnXdegrees(targetSetpoint);
+
   }
 
   // Called once the command ends or is interrupted.

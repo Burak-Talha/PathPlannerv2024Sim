@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathRamsete;
@@ -28,6 +29,7 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
@@ -88,6 +90,8 @@ public class DriveSubsystem extends SubsystemBase {
   // The Field2d class shows the field in the sim GUI
   private final Field2d m_fieldSim;
   private final ADXRS450_GyroSim m_gyroSim;
+
+  double currentAngle = 0;
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
@@ -183,9 +187,21 @@ public class DriveSubsystem extends SubsystemBase {
                 this // Reference to this subsystem to set requirements
         );
     }
+
+    XboxController controller = new XboxController(0);
   
   public void turnXdegrees(double targetSetpoint){
-    arcadeDrive(0, turnPidController.calculate(m_gyro.getRotation2d().getDegrees(), targetSetpoint));
+    try{
+    if(DriverStation.getAlliance().get() == Alliance.Blue){
+      currentAngle = angleCalculationForBlue();
+    }
+    else{
+      currentAngle = getPose().getRotation().getDegrees();
+    }
+  }catch(Exception exception){
+  }
+    //getPose().getRotation().getDegrees()
+    arcadeDrive(-controller.getLeftY()*0.4, turnPidController.calculate(currentAngle, targetSetpoint));
   }
 
   @Override
@@ -196,7 +212,7 @@ public class DriveSubsystem extends SubsystemBase {
         m_leftEncoder.getDistance(),
         m_rightEncoder.getDistance());
     m_fieldSim.setRobotPose(getPose());
-    System.out.println("Current Degree:"+getHeading());
+    System.out.println("Current Degree:"+getPose().getRotation().getDegrees());
   }
 
   @Override
@@ -361,5 +377,9 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public double getHeading() {
     return Math.IEEEremainder(m_gyro.getAngle(), 360) * (DriveConstants.kGyroReversed ? -1.0 : 1.0);
+  }
+
+  public double angleCalculationForBlue(){
+    return Math.abs(m_gyro.getAngle() % 360);
   }
 }
