@@ -85,13 +85,13 @@ public final class Constants {
     public static final double kMaxAccelerationMetersPerSecondSquared = 3;
 
     // Reasonable baseline values for a RAMSETE follower in units of meters and seconds
-    public static final double kRamseteB = 3.5;
-    public static final double kRamseteZeta = 1.6;
+    public static final double kRamseteB = 2.3;
+    public static final double kRamseteZeta = 1.4;
     public static final double kPXController = 2;
     public static double kIXController = 0.0001;
     public static double kDXController = 0.00001;
 
-    public static final double kPYawController = 2.3;
+    public static final double kPYawController = 1.7;
     public static final double KIYawController = 0.0001;
     public static double kDYawController = 0.00001;
 

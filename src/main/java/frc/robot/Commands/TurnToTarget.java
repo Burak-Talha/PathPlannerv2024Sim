@@ -8,24 +8,33 @@ import java.lang.reflect.Field;
 import java.sql.Driver;
 import java.util.Optional;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.ControlBoard;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class TurnToTarget extends Command {
 
-  private DriveSubsystem driveSubsystem;
+  public DriveSubsystem driveSubsystem;
   private Optional<Alliance> currentAlly;
   private Pose2d targetPose;
   private Pose2d currentPose;
+  private double currentAngle;
+
+  private final PIDController turnPidController = new PIDController(AutoConstants.kPTurnController, AutoConstants.KITurnController, AutoConstants.kDTurnController);
+  private XboxController xboxController;
 
   /** Creates a new TurnToTarget. */
-  public TurnToTarget(DriveSubsystem driveSubsystem) {
+  public TurnToTarget(DriveSubsystem driveSubsystem, XboxController xboxController) {
     this.driveSubsystem = driveSubsystem;
+    this.xboxController = xboxController;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(driveSubsystem);
   }
@@ -42,12 +51,8 @@ public class TurnToTarget extends Command {
       targetPose = FieldConstants.BLUE_SUB_WOOFER;
       //driveSubsystem.;
     }
-  }catch(Exception exception){}
-    /*if(currentAlly.get() == Alliance.Blue){
-      targetPose = FieldConstants.BLUE_SUB_WOOFER;
-    }else{
-      targetPose = FieldConstants.RED_SUB_WOOFER;
-    }*/
+  }catch(Exception exception){exception.printStackTrace();}
+
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -60,18 +65,25 @@ public class TurnToTarget extends Command {
     double targetSetpoint = Math.toDegrees(Math.atan2(y, x));
 
     try{
-    if(DriverStation.getAlliance().get() == Alliance.Blue){
-    // Ensure the angle is in the range [0, 360)
-    targetSetpoint = (targetSetpoint + 360) % 360;
+      if(DriverStation.getAlliance().get() == Alliance.Blue){
+      // Ensure the angle is in the range [0, 360)
+      targetSetpoint = (targetSetpoint + 360) % 360;
+      }
+          System.out.print("Target Setpoint: " + targetSetpoint);
+        if(DriverStation.getAlliance().get() == Alliance.Blue){
+          currentAngle = driveSubsystem.getAngleCalculationForBlue();
+        }
+        else{
+          currentAngle = driveSubsystem.getPose().getRotation().getDegrees();
+        }
+      }
+    catch(Exception exception){
+      exception.printStackTrace();
     }
-    }catch(Exception exception){
-      
-    }
-
-    System.out.print("Target Setpoint: " + targetSetpoint);
+      //getPose().getRotation().getDegrees()
 
     // Pass the target setpoint to the turn method in degrees
-    driveSubsystem.turnXdegrees(targetSetpoint);
+    driveSubsystem.arcadeDrive((ControlBoard.getXvelocityDrive())*0.4, turnPidController.calculate(currentAngle, targetSetpoint));
 
   }
 

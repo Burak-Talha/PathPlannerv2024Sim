@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -81,8 +82,10 @@ public class DriveSubsystem extends SubsystemBase {
   private final DifferentialDriveKinematics m_kinematics = new DifferentialDriveKinematics(DriveConstants.kTrackwidthMeters);
   private final PIDController xPidController = new PIDController(AutoConstants.kPXController, AutoConstants.kIXController, AutoConstants.kDXController);
   private final PIDController yawPidController = new PIDController(AutoConstants.kPYawController, AutoConstants.KIYawController, AutoConstants.kDYawController);
-  private final PIDController turnPidController = new PIDController(AutoConstants.kPTurnController, AutoConstants.KITurnController, AutoConstants.kDTurnController);
+  
 
+
+  DecimalFormat decimalFormat = new DecimalFormat("#.###");
   // These classes help us simulate our drivetrain
   public DifferentialDrivetrainSim m_drivetrainSimulator;
   private final EncoderSim m_leftEncoderSim;
@@ -189,29 +192,16 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     XboxController controller = new XboxController(0);
-  
-  public void turnXdegrees(double targetSetpoint){
-    try{
-      currentAngle = getPose().getRotation().getDegrees();
-    if(DriverStation.getAlliance().get() == Alliance.Blue){
-      currentAngle = getAngleCalculationForBlue();
-    }
-  }catch(Exception exception){
-  }
-    //getPose().getRotation().getDegrees()
-    arcadeDrive((controller.getRawAxis(3)-controller.getRawAxis(2))*0.4, turnPidController.calculate(currentAngle, targetSetpoint));
-  }
 
   @Override
   public void periodic() {
-    // Update the odometry in the periodic block
     m_odometry.update(
         Rotation2d.fromDegrees(getHeading()),
         m_leftEncoder.getDistance(),
         m_rightEncoder.getDistance());
     m_fieldSim.setRobotPose(getPose());
-    System.out.print("Current Degree For RED :"+getPose().getRotation().getDegrees());
-    System.out.println("Current Degree For BLUE :"+getAngleCalculationForBlue());
+    System.out.print("RED :"+getPose().getRotation().getDegrees());
+    System.out.println("BLUE :"+getAngleCalculationForBlue());
   }
 
   @Override
@@ -273,7 +263,7 @@ public class DriveSubsystem extends SubsystemBase {
     resetEncoders();
     m_drivetrainSimulator.setPose(pose);
     m_odometry.resetPosition(
-        Rotation2d.fromDegrees(getHeading()),
+        Rotation2d.fromDegrees(pose.getRotation().getDegrees()),
         m_leftEncoder.getDistance(),
         m_rightEncoder.getDistance(),
         pose);
@@ -379,6 +369,6 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public double getAngleCalculationForBlue(){
-    return Math.abs(m_gyro.getAngle() % 360);
+    return (getHeading() + 360) % 360;
   }
 }

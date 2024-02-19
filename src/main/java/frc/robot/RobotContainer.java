@@ -18,17 +18,19 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.Commands.IntakeCmd;
-import frc.robot.Commands.ResetAngle;
+import frc.robot.Commands.ResetOdometer;
 import frc.robot.Commands.TurnToTarget;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import java.util.List;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 
@@ -83,8 +85,9 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> m_robotDrive.setMaxOutput(0.5)))
         .onFalse(new InstantCommand(() -> m_robotDrive.setMaxOutput(1)));
 
-    new JoystickButton(m_driverController, Button.kA.value).whileTrue(new TurnToTarget(m_robotDrive).repeatedly());
+    new JoystickButton(m_driverController, Button.kA.value).whileTrue(new TurnToTarget(m_robotDrive, m_driverController).repeatedly());
     new JoystickButton(m_driverController, Button.kX.value).whileTrue(new IntakeCmd(m_robotDrive, m_driverController));
+    NamedCommands.registerCommand("Shoot Command", null);
   }
 
   public DriveSubsystem getRobotDrive() {
@@ -112,6 +115,6 @@ public class RobotContainer {
     //autoChooser.getSelected(); autoChooser.getSelected().andThen(AutoBuilder.pathfindThenFollowPath(path, new PathConstraints(3, 3, 0, 0)));
     // AutoBuilder.pathfindToPose(new Pose2d(7, 6, new Rotation2d(Math.toRadians(0))), new PathConstraints(3, 3, 0, 0)).andThen(AutoBuilder.pathfindToPose(new Pose2d(1, 4, new Rotation2d(Math.toRadians(0))), new PathConstraints(3, 3, 0, 0))).andThen(AutoBuilder.pathfindToPose(new Pose2d(9, 1, new Rotation2d(Math.toRadians(0))), new PathConstraints(3, 3, 0, 0)));
     //autoChooser.getSelected().andThen(AutoBuilder.pathfindThenFollowPath(path, new PathConstraints(3, 3, 0, 0)));
-    return autoChooser.getSelected().andThen(new ResetAngle(m_robotDrive));
+    return new ResetOdometer(m_robotDrive).andThen(autoChooser.getSelected());
   }
 }
